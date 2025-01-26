@@ -16,7 +16,7 @@ import {
 
 // ==================== Firebase Configuration ====================
 const firebaseConfig = {
-  apiKey: "AIzaSyC0Qgq0EJSQnC2LVpdyuISzs4uDG21hsy8",
+  apiKey: "YOUR_API_KEY", // Replace with your actual API key
   authDomain: "leetocode-2a84c.firebaseapp.com",
   projectId: "leetocode-2a84c",
   storageBucket: "leetocode-2a84c.appspot.com",
@@ -40,13 +40,19 @@ const progressPercentage = document.getElementById('progress-percentage');
 // Detailed Analysis Elements
 const detailedTotalSolvedElem = document.getElementById('detailed-total-solved');
 const detailedAverageSolvedElem = document.getElementById('detailed-average-solved');
-const topicProgressContainer = document.getElementById('topic-progress-container');
 const solvesOverTimeChartCtx = document.getElementById('solves-over-time-chart').getContext('2d');
 const difficultyDistributionChartCtx = document.getElementById('difficulty-distribution-chart').getContext('2d');
+const topicWiseDistributionContainer = document.getElementById('topic-wise-distribution-container');
 
 // Tabs
-const tabButtons = document.querySelectorAll('.tab-button');
+const tabButtons = document.querySelectorAll('.nav-link');
 const tabContents = document.querySelectorAll('.tab-content');
+
+// Dark Mode Toggle
+const darkModeSwitch = document.getElementById('dark-mode-switch');
+
+// Loading Spinner
+const loadingSpinner = document.getElementById('loading-spinner');
 
 // ==================== State Variables ====================
 let currentProfile = 'sharvesh';
@@ -77,12 +83,33 @@ tabButtons.forEach(button => {
     tabContents.forEach(content => content.classList.remove('active'));
     // Show the selected tab content
     const selectedTab = document.getElementById(button.dataset.tab);
-    selectedTab.classList.add('active');
+    if (selectedTab) {
+      selectedTab.classList.add('active');
+    }
   });
+});
+
+// Dark Mode Toggle
+// Check for saved user preference, if any, on load of the website
+if (localStorage.getItem('dark-mode') === 'enabled') {
+  document.body.classList.add('dark-mode');
+  darkModeSwitch.checked = true;
+}
+
+// Listen for toggle changes
+darkModeSwitch.addEventListener('change', () => {
+  if (darkModeSwitch.checked) {
+    document.body.classList.add('dark-mode');
+    localStorage.setItem('dark-mode', 'enabled');
+  } else {
+    document.body.classList.remove('dark-mode');
+    localStorage.setItem('dark-mode', 'disabled');
+  }
 });
 
 // ==================== Load Problems ====================
 async function loadProblems() {
+  loadingSpinner.style.display = 'flex'; // Show spinner
   problemsList.innerHTML = ''; // Clear existing problems
   totalProblemsCount = 0; // Reset total problems count
 
@@ -96,10 +123,12 @@ async function loadProblems() {
     countTotalProblems();
     renderProblems();
     updateOverview();
-    clearDetailedAnalysis();
+    updateDetailedAnalysis();
   } catch (error) {
     console.error('Error loading problems:', error);
     problemsList.innerHTML = `<p>Error loading problems. Please try again later.</p>`;
+  } finally {
+    loadingSpinner.style.display = 'none'; // Hide spinner
   }
 }
 
@@ -163,6 +192,7 @@ function renderProblems() {
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.id = `problem-${problem.id}`;
+      checkbox.setAttribute('aria-label', `Mark problem ${problem.title} as completed`);
       completedCell.appendChild(checkbox);
       row.appendChild(completedCell);
 
@@ -194,6 +224,7 @@ function renderProblems() {
       notesInput.classList.add('notes-input');
       notesInput.placeholder = 'Add notes...';
       notesInput.dataset.problemId = problem.id;
+      notesInput.setAttribute('aria-label', `Add notes for problem ${problem.title}`);
       notesCell.appendChild(notesInput);
       row.appendChild(notesCell);
 
@@ -202,8 +233,9 @@ function renderProblems() {
       const linkIcon = document.createElement('a');
       linkIcon.href = problem.link;
       linkIcon.target = '_blank';
-      linkIcon.title = 'Go to Problem';
-      linkIcon.innerHTML = '🔗';
+      linkIcon.title = `Go to Problem ${problem.title}`;
+      linkIcon.setAttribute('aria-label', `Go to problem ${problem.title}`);
+      linkIcon.innerHTML = '<i class="fas fa-external-link-alt"></i>';
       linkCell.appendChild(linkIcon);
       row.appendChild(linkCell);
 
@@ -299,12 +331,12 @@ function renderProblems() {
             });
         }
       });
-    });
+    }); // Close topic.problems.forEach
 
     table.appendChild(tbody);
     topicDiv.appendChild(table);
     problemsList.appendChild(topicDiv);
-  });
+  }); // Close problemsData.topics.forEach
 }
 
 // ==================== Update Overview ====================
@@ -386,23 +418,21 @@ function renderAverageSolvedChart(totalSolved) {
       }]
     },
     options: {
-      rotation: -90,
-      circumference: 180,
+      cutout: '70%',
       plugins: {
         tooltip: { enabled: false },
         legend: { display: false },
         // Display the average number in the center
         beforeDraw: function(chart) {
-          const width = chart.width,
-                height = chart.height,
-                ctx = chart.ctx;
+          const { ctx, width, height } = chart;
           ctx.restore();
-          const fontSize = (height / 114).toFixed(2);
-          ctx.font = `${fontSize}em sans-serif`;
+          const fontSize = (height / 160).toFixed(2);
+          ctx.font = `${fontSize}em Roboto`;
           ctx.textBaseline = "middle";
           const text = averageSolved,
                 textX = Math.round((width - ctx.measureText(text).width) / 2),
-                textY = height / 1.5;
+                textY = height / 2;
+          ctx.fillStyle = '#34495e';
           ctx.fillText(text, textX, textY);
           ctx.save();
         }
@@ -420,15 +450,8 @@ function updateProgressBar(solved, total) {
   const percentage = total === 0 ? 0 : ((solved / total) * 100).toFixed(1);
   console.log(`Progress: ${solved}/${total} (${percentage}%)`);
   overallProgressBar.style.width = `${percentage}%`;
+  overallProgressBar.setAttribute('aria-valuenow', percentage);
   progressPercentage.textContent = `${percentage}%`;
-}
-
-// ==================== Clear Detailed Analysis ====================
-function clearDetailedAnalysis() {
-  const detailedSection = document.getElementById('detailed');
-  detailedSection.innerHTML = `
-    <p>Select a tab to view detailed analysis.</p>
-  `;
 }
 
 // ==================== Update Detailed Analysis ====================
@@ -469,80 +492,14 @@ async function updateDetailedAnalysis() {
       }
     });
 
-    renderTopicProgress();
-
     // Render Graphs
     renderSolvesOverTimeChart();
     renderDifficultyDistributionChart();
+
+    // Render Topic-Wise Difficulty Distribution
+    renderTopicWiseDistribution(topicWiseSolved);
   } catch (error) {
     console.error("Error updating detailed analysis:", error);
-  }
-}
-
-// ==================== Render Topic Progress ====================
-function renderTopicProgress() {
-  topicProgressContainer.innerHTML = ''; // Clear existing
-
-  for (const [topic, count] of Object.entries(topicWiseSolved)) {
-    // Find total problems in this topic
-    const topicData = problemsData.topics.find(t => t.name === topic);
-    const totalProblems = topicData ? topicData.problems.length : 1;
-    const percentage = Math.min((count / totalProblems) * 100, 100).toFixed(1);
-
-    // Create topic progress card
-    const topicDiv = document.createElement('div');
-    topicDiv.classList.add('topic-progress');
-
-    // Canvas for progress circle
-    const canvas = document.createElement('canvas');
-    canvas.id = `topic-chart-${topic}`;
-    canvas.width = 100;
-    canvas.height = 100;
-    topicDiv.appendChild(canvas);
-
-    // Topic Name
-    const topicName = document.createElement('h4');
-    topicName.textContent = topic;
-    topicDiv.appendChild(topicName);
-
-    topicProgressContainer.appendChild(topicDiv);
-
-    // Render Chart
-    new Chart(canvas, {
-      type: 'doughnut',
-      data: {
-        labels: ['Solved', 'Remaining'],
-        datasets: [{
-          data: [percentage, 100 - percentage],
-          backgroundColor: ['#e74c3c', '#ecf0f1'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        rotation: -90,
-        circumference: 180,
-        plugins: {
-          tooltip: { enabled: false },
-          legend: { display: false },
-          beforeDraw: function(chart) {
-            const width = chart.width,
-                  height = chart.height,
-                  ctx = chart.ctx;
-            ctx.restore();
-            const fontSize = (height / 114).toFixed(2);
-            ctx.font = `${fontSize}em sans-serif`;
-            ctx.textBaseline = "middle";
-            const text = `${percentage}%`,
-                  textX = Math.round((width - ctx.measureText(text).width) / 2),
-                  textY = height / 1.5;
-            ctx.fillText(text, textX, textY);
-            ctx.save();
-          }
-        }
-      }
-    });
-
-    console.log(`Topic: ${topic}, Solved: ${count}/${totalProblems} (${percentage}%)`);
   }
 }
 
@@ -570,24 +527,39 @@ function renderSolvesOverTimeChart() {
     data: {
       labels: sortedDays,
       datasets: [{
-        label: 'Problems Solved Over Time',
+        label: 'Problems Solved',
         data: data,
         borderColor: '#1abc9c',
         backgroundColor: 'rgba(26, 188, 156, 0.2)',
         fill: true,
-        tension: 0.1
+        tension: 0.3,
+        pointBackgroundColor: '#1abc9c',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: '#1abc9c'
       }]
     },
     options: {
+      responsive: true,
       scales: {
         x: { 
           title: { display: true, text: 'Date' },
-          ticks: { maxRotation: 90, minRotation: 45 }
+          ticks: { maxRotation: 90, minRotation: 45 },
+          grid: { display: false }
         },
         y: { 
           title: { display: true, text: 'Number of Problems Solved' },
           beginAtZero: true,
-          precision: 0
+          precision: 0,
+          grid: { color: '#f0f0f0' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { 
+          backgroundColor: '#1abc9c',
+          titleColor: '#fff',
+          bodyColor: '#fff'
         }
       }
     }
@@ -630,8 +602,14 @@ async function renderDifficultyDistributionChart() {
         }]
       },
       options: {
+        responsive: true,
         plugins: {
-          legend: { position: 'bottom' }
+          legend: { position: 'bottom' },
+          tooltip: { 
+            backgroundColor: '#34495e',
+            titleColor: '#fff',
+            bodyColor: '#fff'
+          }
         }
       }
     });
@@ -640,6 +618,99 @@ async function renderDifficultyDistributionChart() {
   } catch (error) {
     console.error("Error rendering difficulty distribution chart:", error);
   }
+}
+
+// ==================== Render Topic-Wise Difficulty Distribution ====================
+function renderTopicWiseDistribution(topicWiseSolved) {
+  // Gather per-topic difficulty counts
+  const topicDifficultyCounts = {};
+  problemsData.topics.forEach(topic => {
+    topicDifficultyCounts[topic.name] = { Easy: 0, Medium: 0, Hard: 0 };
+  });
+
+  // Query all completed problems
+  const userProblemsRef = collection(db, 'users', currentProfile, 'problems');
+  const qCompleted = query(userProblemsRef, where('completed', '==', true));
+
+  getDocs(qCompleted).then(snapshot => {
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (
+        data.topic &&
+        topicDifficultyCounts[data.topic] &&
+        data.difficulty &&
+        topicDifficultyCounts[data.topic][data.difficulty] !== undefined
+      ) {
+        topicDifficultyCounts[data.topic][data.difficulty] += 1;
+      }
+    });
+
+    // Render each topic's difficulty distribution
+    renderTopicWiseDistributionCharts(topicDifficultyCounts);
+  }).catch(error => {
+    console.error("Error fetching completed problems for topic-wise distribution:", error);
+  });
+}
+
+// Helper function to render topic-wise distribution charts
+function renderTopicWiseDistributionCharts(topicDifficultyCounts) {
+  // Clear existing content
+  topicWiseDistributionContainer.innerHTML = '';
+
+  // Iterate over each topic
+  Object.entries(topicDifficultyCounts).forEach(([topicName, counts]) => {
+    const total = counts.Easy + counts.Medium + counts.Hard;
+
+    // Only display topics with at least one solved problem
+    if (total === 0) return;
+
+    // Create card
+    const card = document.createElement('div');
+    card.classList.add('topic-wise-distribution-card');
+
+    // Heading
+    const heading = document.createElement('h3');
+    heading.textContent = `${topicName}`;
+    card.appendChild(heading);
+
+    // Breakdown Text
+    const breakdown = document.createElement('p');
+    breakdown.textContent = `Solved: ${total} (${counts.Easy} Easy, ${counts.Medium} Medium, ${counts.Hard} Hard)`;
+    card.appendChild(breakdown);
+
+    // Canvas for Pie Chart
+    const canvas = document.createElement('canvas');
+    canvas.id = `topic-wise-chart-${topicName.replace(/\s+/g, '-')}`;
+    canvas.setAttribute('aria-label', `Difficulty Distribution for ${topicName}`);
+    canvas.setAttribute('role', 'img');
+    card.appendChild(canvas);
+
+    // Append card to container
+    topicWiseDistributionContainer.appendChild(card);
+
+    // Render Pie Chart
+    new Chart(canvas, {
+      type: 'pie',
+      data: {
+        labels: ['Easy', 'Medium', 'Hard'],
+        datasets: [{
+          data: [counts.Easy, counts.Medium, counts.Hard],
+          backgroundColor: ['#2ecc71', '#f1c40f', '#e74c3c']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: { 
+            backgroundColor: '#34495e',
+            titleColor: '#fff',
+            bodyColor: '#fff'
+          }
+        }
+      }
+    });
+  });
 }
 
 // ==================== Initial Load ====================

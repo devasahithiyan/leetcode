@@ -1,7 +1,7 @@
 {
     "topics": [
       {
-        "name": "Arrays",
+        "name": "Array",
         "problems": [
           {
             "id": 1,
@@ -11,29 +11,42 @@
           },
           {
             "id": 2,
-            "title": "Best Time to Buy and Sell Stock",
-            "difficulty": "Easy",
-            "link": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock/"
+            "title": "3Sum",
+            "difficulty": "Medium",
+            "link": "https://leetcode.com/problems/3sum/"
+          },
+          {
+            "id": 3,
+            "title": "Trapping Rain Water",
+            "difficulty": "Hard",
+            "link": "https://leetcode.com/problems/trapping-rain-water/"
           }
         ]
       },
       {
-        "name": "Linked Lists",
+        "name": "Linked List",
         "problems": [
           {
-            "id": 3,
+            "id": 4,
             "title": "Reverse Linked List",
             "difficulty": "Easy",
             "link": "https://leetcode.com/problems/reverse-linked-list/"
           },
           {
-            "id": 4,
+            "id": 5,
             "title": "Merge Two Sorted Lists",
             "difficulty": "Easy",
             "link": "https://leetcode.com/problems/merge-two-sorted-lists/"
+          },
+          {
+            "id": 6,
+            "title": "Add Two Numbers",
+            "difficulty": "Medium",
+            "link": "https://leetcode.com/problems/add-two-numbers/"
           }
         ]
       }
+      
     ]
   }
   

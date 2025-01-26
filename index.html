@@ -1,93 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LeetCode Tracker</title>
-  <link rel="stylesheet" href="styles.css">
-  <!-- Include Chart.js for Graphs and Progress Circles -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Include Font Awesome for Icons -->
+
+  <!-- Google Fonts for Improved Typography -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome for Icons -->
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+  <!-- Chart.js for Graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>LeetCode Tracker</h1>
-    <div class="profile-selector">
-      <label for="profile">Select Profile:</label>
-      <select id="profile">
-        <option value="sharvesh">Ananth</option>
-        <option value="deva">Deva</option>
-        <option value="sandeep">Manoharan</option>
-      </select>
-    </div>
-    <nav>
-      <button class="tab-button active" data-tab="overview">Overview</button>
-      <button class="tab-button" data-tab="detailed">Detailed Analysis</button>
-    </nav>
-  </header>
+  <div class="container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>LeetCode Tracker</h2>
+      </div>
+      <div class="profile-section">
+        <label for="profile">Profile:</label>
+        <select id="profile" aria-label="Select Profile">
+          <option value="sharvesh">Sharvesh</option>
+          <option value="deva">Deva</option>
+          <option value="sandeep">Sandeep</option>
+        </select>
+      </div>
+      <nav class="nav-menu">
+        <button class="nav-link active" data-tab="overview">
+          <i class="fas fa-home"></i> Overview
+        </button>
+        <button class="nav-link" data-tab="detailed">
+          <i class="fas fa-chart-bar"></i> Detailed Analysis
+        </button>
+      </nav>
+      <!-- Dark Mode Toggle -->
+      <div class="dark-mode-toggle">
+        <label for="dark-mode-switch">Dark Mode:</label>
+        <input type="checkbox" id="dark-mode-switch" aria-label="Toggle Dark Mode">
+      </div>
+    </aside>
 
-  <main>
-    <!-- Overview Tab -->
-    <section id="overview" class="tab-content active">
-      <div class="overview-stats">
-        <div class="stat-card">
-          <i class="fas fa-check-circle fa-2x icon-success"></i>
-          <h3>Total Solved</h3>
-          <p id="total-solved">0</p>
-        </div>
-        <div class="stat-card">
-          <i class="fas fa-chart-line fa-2x icon-info"></i>
-          <h3>Average Solved Per Day</h3>
-          <canvas id="average-solved-chart" width="100" height="100"></canvas>
-          <p id="average-solved">0</p> <!-- Added Element -->
-        </div>
-        <div class="stat-card progress-card">
-          <i class="fas fa-tasks fa-2x icon-progress"></i>
-          <h3>Overall Progress</h3>
-          <div class="progress-bar-container">
-            <div id="overall-progress-bar" class="progress-bar"></div>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- ==================== Overview Tab ==================== -->
+      <section id="overview" class="tab-content active">
+        <div class="stats-grid">
+          <!-- Total Solved -->
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Total Solved</h3>
+              <p id="total-solved">0</p>
+            </div>
           </div>
-          <span id="progress-percentage">0%</span>
+          <!-- Average Solved Per Day -->
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Average Solved Per Day</h3>
+              <div class="chart-container">
+                <canvas id="average-solved-chart" aria-label="Average Solved Per Day Chart" role="img"></canvas>
+                <span id="average-solved">0</span>
+              </div>
+            </div>
+          </div>
+          <!-- Overall Progress Bar -->
+          <div class="stat-card progress-card">
+            <div class="stat-icon">
+              <i class="fas fa-tasks"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Overall Progress</h3>
+              <div class="progress-bar-container" aria-label="Overall Progress">
+                <div id="overall-progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <span id="progress-percentage">0%</span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <section id="problems-list">
-        <!-- Problems will be dynamically loaded here as tables -->
+        <!-- Problems List -->
+        <section id="problems-list">
+          <!-- Dynamically loaded tables for each topic -->
+        </section>
       </section>
-    </section>
 
-    <!-- Detailed Analysis Tab -->
-    <section id="detailed" class="tab-content">
-      <div class="detailed-stats">
-        <div class="stat-card">
-          <i class="fas fa-check-circle fa-2x icon-success"></i>
-          <h3>Total Solved</h3>
-          <p id="detailed-total-solved">0</p> <!-- Added Element -->
+      <!-- ==================== Detailed Analysis Tab ==================== -->
+      <section id="detailed" class="tab-content">
+        <div class="detailed-stats-grid">
+          <!-- Total Solved -->
+          <div class="detailed-stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Total Solved</h3>
+              <p id="detailed-total-solved">0</p>
+            </div>
+          </div>
+          <!-- Average Solved Per Day -->
+          <div class="detailed-stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Average Solved Per Day</h3>
+              <p id="detailed-average-solved">0</p>
+            </div>
+          </div>
         </div>
-        <div class="stat-card">
-          <i class="fas fa-chart-line fa-2x icon-info"></i>
-          <h3>Average Solved Per Day</h3>
-          <p id="detailed-average-solved">0</p> <!-- Added Element -->
+
+        <!-- Solves Over Time Graph -->
+        <div class="graph-section">
+          <h2>Solves Over Time</h2>
+          <div class="chart-wrapper">
+            <canvas id="solves-over-time-chart" aria-label="Solves Over Time Chart" role="img"></canvas>
+          </div>
         </div>
-      </div>
 
-      <div class="topic-analysis">
-        <h2>Solves by Topic</h2>
-        <div id="topic-progress-container">
-          <!-- Topic progress circles will be inserted here -->
+        <!-- Difficulty Distribution -->
+        <div class="chart-section">
+          <h2>Difficulty Distribution</h2>
+          <div class="chart-wrapper">
+            <canvas id="difficulty-distribution-chart" aria-label="Difficulty Distribution Chart" role="img"></canvas>
+          </div>
         </div>
-      </div>
 
-      <div class="graphs">
-        <h2>Graphs</h2>
-        <canvas id="solves-over-time-chart"></canvas>
-        <canvas id="difficulty-distribution-chart"></canvas>
-      </div>
-    </section>
-  </main>
+        <!-- Topic-Wise Difficulty Distribution -->
+        <div class="topic-wise-section">
+          <h2>Topic-Wise Difficulty Distribution</h2>
+          <div id="topic-wise-distribution-container" class="topic-wise-distribution-container">
+            <!-- Populated dynamically with topic-wise pie charts -->
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-  <!-- Firebase SDKs -->
+  <!-- Loading Spinner -->
+  <div id="loading-spinner" class="loading-spinner">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Firebase SDKs and Your App Script -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
