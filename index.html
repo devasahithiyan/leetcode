@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LeetCode Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Include Chart.js for Graphs and Progress Circles -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Include Font Awesome for Icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <h1>LeetCode Tracker</h1>
+    <div class="profile-selector">
+      <label for="profile">Select Profile:</label>
+      <select id="profile">
+        <option value="sharvesh">Sharvesh</option>
+        <option value="deva">Deva</option>
+        <option value="sandeep">Sandeep</option>
+      </select>
+    </div>
+    <nav>
+      <button class="tab-button active" data-tab="overview">Overview</button>
+      <button class="tab-button" data-tab="detailed">Detailed Analysis</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Overview Tab -->
+    <section id="overview" class="tab-content active">
+      <div class="overview-stats">
+        <div class="stat-card">
+          <i class="fas fa-check-circle fa-2x icon-success"></i>
+          <h3>Total Solved</h3>
+          <p id="total-solved">0</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-chart-line fa-2x icon-info"></i>
+          <h3>Average Solved Per Day</h3>
+          <canvas id="average-solved-chart" width="100" height="100"></canvas>
+          <p id="average-solved">0</p> <!-- Added Element -->
+        </div>
+        <div class="stat-card progress-card">
+          <i class="fas fa-tasks fa-2x icon-progress"></i>
+          <h3>Overall Progress</h3>
+          <div class="progress-bar-container">
+            <div id="overall-progress-bar" class="progress-bar"></div>
+          </div>
+          <span id="progress-percentage">0%</span>
+        </div>
+      </div>
+
+      <section id="problems-list">
+        <!-- Problems will be dynamically loaded here as tables -->
+      </section>
+    </section>
+
+    <!-- Detailed Analysis Tab -->
+    <section id="detailed" class="tab-content">
+      <div class="detailed-stats">
+        <div class="stat-card">
+          <i class="fas fa-check-circle fa-2x icon-success"></i>
+          <h3>Total Solved</h3>
+          <p id="detailed-total-solved">0</p> <!-- Added Element -->
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-chart-line fa-2x icon-info"></i>
+          <h3>Average Solved Per Day</h3>
+          <p id="detailed-average-solved">0</p> <!-- Added Element -->
+        </div>
+      </div>
+
+      <div class="topic-analysis">
+        <h2>Solves by Topic</h2>
+        <div id="topic-progress-container">
+          <!-- Topic progress circles will be inserted here -->
+        </div>
+      </div>
+
+      <div class="graphs">
+        <h2>Graphs</h2>
+        <canvas id="solves-over-time-chart"></canvas>
+        <canvas id="difficulty-distribution-chart"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
