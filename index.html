@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LeetCode Tracker</title>
 
-  <!-- Google Fonts for Improved Typography -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
 
-  <!-- Font Awesome for Icons -->
+  <!-- Font Awesome -->
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
-  <!-- Chart.js for Graphs -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Stylesheet -->
+  <!-- Styles -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <!-- Sidebar Navigation -->
+    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <h2>LeetCode Tracker</h2>
@@ -40,11 +40,9 @@
           <i class="fas fa-chart-bar"></i> Detailed Analysis
         </button>
       </nav>
-      <!-- Dark Mode Toggle -->
-      <div class="dark-mode-toggle">
-        <label for="dark-mode-switch">Dark Mode:</label>
-        <input type="checkbox" id="dark-mode-switch" aria-label="Toggle Dark Mode">
-      </div>
+      <button id="sync-button" class="sync-button">
+        <i class="fas fa-sync-alt"></i> Sync with API
+      </button>
     </aside>
 
     <!-- Main Content -->
@@ -70,7 +68,7 @@
             <div class="stat-info">
               <h3>Average Solved Per Day</h3>
               <div class="chart-container">
-                <canvas id="average-solved-chart" aria-label="Average Solved Per Day Chart" role="img"></canvas>
+                <canvas id="average-solved-chart"></canvas>
                 <span id="average-solved">0</span>
               </div>
             </div>
@@ -81,19 +79,19 @@
               <i class="fas fa-tasks"></i>
             </div>
             <div class="stat-info">
-              <h3>Overall Progress</h3>
-              <div class="progress-bar-container" aria-label="Overall Progress">
-                <div id="overall-progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+              <h3>Overall Progress <span id="overall-progress-numbers" style="font-size:0.9em;"></span></h3>
+              <div class="progress-bar-container">
+                <div id="overall-progress-bar" class="progress-bar" 
+                     role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                </div>
               </div>
               <span id="progress-percentage">0%</span>
             </div>
           </div>
         </div>
 
-        <!-- Problems List -->
-        <section id="problems-list">
-          <!-- Dynamically loaded tables for each topic -->
-        </section>
+        <!-- Problems List (collapsible) -->
+        <section id="problems-list"></section>
       </section>
 
       <!-- ==================== Detailed Analysis Tab ==================== -->
@@ -124,24 +122,25 @@
         <!-- Solves Over Time Graph -->
         <div class="graph-section">
           <h2>Solves Over Time</h2>
-          <div class="chart-wrapper">
-            <canvas id="solves-over-time-chart" aria-label="Solves Over Time Chart" role="img"></canvas>
+          <div class="chart-wrapper custom-chart-height">
+            <canvas id="solves-over-time-chart"></canvas>
           </div>
         </div>
 
         <!-- Difficulty Distribution -->
         <div class="chart-section">
           <h2>Difficulty Distribution</h2>
-          <div class="chart-wrapper">
-            <canvas id="difficulty-distribution-chart" aria-label="Difficulty Distribution Chart" role="img"></canvas>
+          <div class="chart-wrapper custom-chart-height">
+            <canvas id="difficulty-distribution-chart"></canvas>
           </div>
         </div>
 
-        <!-- Topic-Wise Difficulty Distribution -->
+        <!-- ==================== Topic-Wise Detailed Analysis ==================== -->
         <div class="topic-wise-section">
-          <h2>Topic-Wise Difficulty Distribution</h2>
-          <div id="topic-wise-distribution-container" class="topic-wise-distribution-container">
-            <!-- Populated dynamically with topic-wise pie charts -->
+          <h2>Topic-Wise Detailed Analysis</h2>
+          <!-- A grid of cards, each with pie chart, completion rate, etc. -->
+          <div id="topic-wise-grid" class="topic-wise-grid">
+            <!-- Populated dynamically in app.js -->
           </div>
         </div>
       </section>
@@ -153,7 +152,7 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- Firebase SDKs and Your App Script -->
+  <!-- Firebase & Script -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
