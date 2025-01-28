@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LeetCode Tracker</title>
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Google Fonts (Updated) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Font Awesome -->
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
@@ -79,9 +79,9 @@
               <i class="fas fa-tasks"></i>
             </div>
             <div class="stat-info">
-              <h3>Overall Progress <span id="overall-progress-numbers" style="font-size:0.9em;"></span></h3>
+              <h3>Overall Progress <span id="overall-progress-numbers" class="overall-progress-numbers"></span></h3>
               <div class="progress-bar-container">
-                <div id="overall-progress-bar" class="progress-bar" 
+                <div id="overall-progress-bar" class="progress-bar progress-bar-fill" 
                      role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
                 </div>
               </div>
@@ -151,6 +151,9 @@
   <div id="loading-spinner" class="loading-spinner">
     <div class="spinner"></div>
   </div>
+
+  <!-- Progress Announcer for Accessibility -->
+  <div class="sr-only" aria-live="polite" id="progress-announcer"></div>
 
   <!-- Firebase & Script -->
   <script type="module" src="app.js"></script>
