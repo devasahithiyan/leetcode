@@ -1,20 +1,29 @@
-/* ==================== Root Variables ==================== */
+/* ==================== Root Variables (Material-like Palette) ==================== */
 :root {
-  --primary: #2563eb;       /* Modern blue */
-  --secondary: #3b82f6;     /* Lighter blue */
-  --accent: #10b981;        /* Fresh green */
-  --background: #f8fafc;    /* Light bg */
-  --surface: #ffffff;       /* Card bg */
-  --text-primary: #1e293b;  /* Dark text */
-  --text-secondary: #64748b;
-  --error: #ef4444;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --border-color: #e2e8f0;
+  /* Background & Surfaces */
+  --background: #ECEFF1;
+  --surface: #FFFFFF;
+
+  /* Text Colors */
+  --text-primary: #212121;
+  --text-secondary: #616161;
+
+  /* Brand Colors */
+  --primary: #2196F3;    /* Blue */
+  --secondary: #00BCD4;  /* Teal */
+  --accent: #FFC107;     /* Amber */
+
+  /* Borders & Shadows */
+  --border-color: #CFD8DC;
   --shadow-color: rgba(0, 0, 0, 0.1);
+
+  /* Alerts */
+  --error: #f44336;
+  --success: #4CAF50;
+  --warning: #FF9800;
 }
 
-/* ==================== Reset & Base ==================== */
+/* ==================== Base & Reset ==================== */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -22,19 +31,20 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif; /* Updated font */
+  font-family: 'Inter', sans-serif;
   background-color: var(--background);
   color: var(--text-primary);
   line-height: 1.6;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
+/* ==================== Container & Sidebar ==================== */
 .container {
   display: flex;
   min-height: 100vh;
   gap: 1rem;
 }
 
-/* ==================== Modern Sidebar ==================== */
 .sidebar {
   width: 280px;
   background: var(--surface);
@@ -52,10 +62,12 @@ body {
   color: var(--text-primary);
 }
 
+/* Profile Section */
 .profile-section label {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
+  color: var(--text-primary);
 }
 
 .profile-section select {
@@ -64,16 +76,17 @@ body {
   border: 2px solid var(--border-color);
   border-radius: 0.5rem;
   font-size: 1em;
-  background-color: #fff;
+  background-color: var(--surface);
   color: var(--text-primary);
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .profile-section select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.25);
 }
 
+/* Nav Menu */
 .nav-menu {
   display: flex;
   flex-direction: column;
@@ -99,15 +112,16 @@ body {
 .nav-link:hover,
 .nav-link.active {
   background: var(--primary);
-  color: white;
+  color: #ffffff;
   transform: translateX(4px);
 }
 
+/* Sync Button */
 .sync-button {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: var(--accent);
+  background: var(--secondary);
   color: #ffffff;
   border: none;
   border-radius: 0.5rem;
@@ -124,7 +138,7 @@ body {
   transform: scale(0.98);
 }
 
-/* ==================== Enhanced Main Content ==================== */
+/* ==================== Main Content & Tabs ==================== */
 .main-content {
   flex: 1;
   padding: 2rem;
@@ -133,17 +147,15 @@ body {
   transition: padding 0.3s ease;
 }
 
-/* ==================== Tabs ==================== */
 .tab-content {
   display: none;
 }
-
 .tab-content.active {
   display: block;
   animation: fadeIn 0.3s ease-out;
 }
 
-/* ==================== Stat Cards ==================== */
+/* ==================== Stat Cards (Overview & Detailed) ==================== */
 .stats-grid,
 .detailed-stats-grid {
   display: grid;
@@ -172,7 +184,7 @@ body {
 
 .stat-icon i {
   font-size: 2.5em;
-  color: var(--accent);
+  color: var(--primary);
 }
 
 .stat-info h3 {
@@ -184,64 +196,47 @@ body {
 .stat-info p {
   font-size: 1.8em;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--secondary);
 }
 
-/* ==================== Unified Progress Bars ==================== */
-.progress-bar-unified {
-  height: 16px;
-  border-radius: 8px;
-  background: #e2e8f0;
+/* Progress Bar */
+.progress-card {
+  grid-column: span 2;
+}
+
+.progress-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.5rem;
+}
+
+.progress-bar-container {
+  width: 120px; /* fixed to align all bars */
+  background-color: var(--border-color);
+  height: 10px;
+  border-radius: 5px;
   position: relative;
   overflow: hidden;
 }
 
 .progress-bar-fill {
-  height: 100%;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
-  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-}
-
-.progress-bar-fill::after {
-  content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0.2) 25%, 
-    rgba(0, 0, 0, 0.1) 50%, 
-    rgba(255, 255, 255, 0.2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite linear;
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: 5px;
+  transition: width 0.4s ease-in-out;
 }
 
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.progress-percentage {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
 }
 
-/* Apply unified styles to all progress bars */
-#overall-progress-bar,
-.topic-header .progress-bar {
-  height: 16px;
-  border-radius: 8px;
-}
-
-.progress-bar-container {
-  width: 180px;
-  margin-left: auto;
-}
-
-.progress-bar-fill {
-  width: 0%;
-}
-
-/* ==================== Chart Container ==================== */
+/* ==================== Chart Containers ==================== */
 .chart-container {
   position: relative;
   width: 100px;
@@ -262,7 +257,7 @@ body {
   transform: translate(-50%, -50%);
   font-size: 1em;
   font-weight: 600;
-  color: #34495e;
+  color: var(--text-primary);
 }
 
 /* ==================== Problems List (Overview) ==================== */
@@ -283,28 +278,43 @@ body {
   box-shadow: 0 4px 8px var(--shadow-color);
 }
 
+/* Collapsible header with consistent alignment */
 .topic-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  gap: 1rem;
   cursor: pointer;
   margin-bottom: 10px;
 }
 
 .topic-header h2 {
   margin: 0;
-  font-size: 1.3em; /* Updated font size */
+  font-size: 1.2em;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-/* Sort Controls */
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: end;
+}
+
+/* Sort Controls on the far right */
+.sort-controls {
+  justify-self: end;
+  display: inline-block;
+}
+
 .sort-controls select {
   padding: 0.35rem 0.75rem;
   border: 2px solid var(--border-color);
   border-radius: 6px;
   font-size: 0.9em;
-  background: white;
+  background: var(--surface);
+  color: var(--text-primary);
   transition: all 0.2s ease;
 }
 
@@ -312,16 +322,16 @@ body {
   border-color: var(--primary);
 }
 
-/* Enhanced Table Styling */
+/* Table in Overview's Problem List */
 .topic table {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
   border: 1px solid var(--border-color);
   border-radius: 0.75rem;
   overflow: hidden;
-  border-collapse: separate;
-  border-spacing: 0;
   background: var(--surface);
-  width: 100%;
+  box-shadow: 0 1px 3px var(--shadow-color);
   transition: all 0.3s ease;
 }
 
@@ -329,21 +339,22 @@ body {
 .topic table td {
   padding: 1rem;
   text-align: left;
+  color: var(--text-primary);
 }
 
 .topic table th {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); /* Enhanced styling */
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: white;
-  font-weight: 600; /* Updated font weight */
-  letter-spacing: 0.5px; /* Added letter spacing */
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .topic table td {
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .topic table tr:hover {
-  background-color: #f8fafc; /* Enhanced hover effect */
+  background-color: #FAFAFA;
 }
 
 .topic table tr:last-child td {
@@ -358,29 +369,37 @@ body {
 .notes-input {
   width: 100%;
   padding: 6px 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 0.375rem;
+  background: var(--surface);
+  color: var(--text-primary);
   transition: border-color 0.2s;
 }
 
 .notes-input:focus {
-  border-color: #1abc9c;
+  border-color: var(--accent);
   outline: none;
 }
 
-/* ==================== Difficulty Badges ==================== */
-td.difficulty-easy,
-td.difficulty-medium,
-td.difficulty-hard {
-  padding: 0.25rem 0.75rem;
+/* Difficulty Badges */
+td.difficulty-easy {
+  background: #C8E6C9;
+  color: #2E7D32;
+  padding: 0.4rem 0.75rem;
   border-radius: 1rem;
-  font-size: 0.85em;
-  display: inline-block;
 }
-
-td.difficulty-easy { background: #e6f6ec; color: #2ecc71; }
-td.difficulty-medium { background: #fef7e0; color: #f1c40f; }
-td.difficulty-hard { background: #feeceb; color: #e74c3c; }
+td.difficulty-medium {
+  background: #FFECB3;
+  color: #F57C00;
+  padding: 0.4rem 0.75rem;
+  border-radius: 1rem;
+}
+td.difficulty-hard {
+  background: #FFCDD2;
+  color: #C62828;
+  padding: 0.4rem 0.75rem;
+  border-radius: 1rem;
+}
 
 /* ==================== Detailed Analysis Sections ==================== */
 .graph-section,
@@ -418,60 +437,91 @@ td.difficulty-hard { background: #feeceb; color: #e74c3c; }
   height: 300px;
 }
 
-/* ==================== Topic-Wise Detailed Analysis Grid ==================== */
+/* Topic-Wise Cards Grid */
 .topic-wise-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 25px; /* Updated gap */
-  padding: 15px 0; /* Added padding */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 15px 0;
   align-items: start;
   margin-top: 20px;
 }
 
-.topic-wise-card {
-  background: white;
-  border-radius: 12px; /* Updated border-radius */
-  padding: 1.5rem; /* Updated padding */
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Updated box-shadow */
-  min-height: 320px; /* Added min-height */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid #e2e8f0; /* Added border */
+/* ==================== Accordion-Style Cards for Each Topic ==================== */
+.accordion-card {
+  background: var(--surface);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  border: 1px solid var(--border-color);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.topic-wise-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Updated box-shadow */
+.accordion-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px var(--shadow-color);
 }
 
-.topic-wise-card h3 {
-  font-size: 1.3rem; /* Updated font size */
-  margin-bottom: 1rem; /* Updated margin */
-  color: #1e293b; /* Updated color */
-  font-weight: 700; /* Updated font weight */
-}
-
-.topic-wise-card .stats-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  width: 100%;
-  margin: 1rem 0;
-}
-
-.topic-wise-card .stat-item {
-  text-align: center;
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
   padding: 0.5rem;
-  background: #f8fafc;
-  border-radius: 8px;
 }
 
-.topic-wise-card .topic-chart {
-  width: 220px; /* Updated width */
-  height: 220px; /* Updated height */
-  margin: 1rem 0; /* Added margin */
+.accordion-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.accordion-header .topic-progress-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.accordion-header .topic-progress-info span {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.accordion-body {
+  margin-top: 1rem;
+  display: none; /* hidden by default; toggled via JS */
+}
+
+.accordion-body.open {
+  display: block; /* shown when user toggles open */
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* A small stats row with placeholders for "Longest Streak," "Time Spent," etc. */
+.topic-extra-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.topic-extra-stats .stat-box {
+  background: #FAFAFA;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  flex: 1 1 120px;
+  text-align: center;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+.topic-chart {
+  width: 100%;
+  max-width: 250px;
+  margin: 1rem auto;
+  height: 250px;
+  position: relative;
 }
 
 /* ==================== Loading Spinner ==================== */
@@ -481,7 +531,7 @@ td.difficulty-hard { background: #feeceb; color: #e74c3c; }
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(236, 239, 241, 0.8);
   display: none;
   justify-content: center;
   align-items: center;
@@ -489,76 +539,371 @@ td.difficulty-hard { background: #feeceb; color: #e74c3c; }
 }
 
 .spinner {
-  border: 3px solid rgba(37, 99, 235, 0.1);
+  border: 4px solid rgba(0, 0, 0, 0.1);
   border-top-color: var(--primary);
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* ==================== Animations ==================== */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* ==================== Responsive Design ==================== */
-@media(max-width:1200px){
-  .sidebar { width: 200px; }
-  .custom-chart-height { height: 250px; }
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@media(max-width:768px){
-  .container { flex-direction: column; }
+@keyframes fadeOutDown {
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* ==================== Responsive Design Enhancements ==================== */
+
+/* Larger devices (Desktops and large tablets) */
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 220px;
+  }
+  .custom-chart-height {
+    height: 250px;
+  }
+}
+
+/* Medium devices (Tablets) */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 200px;
+  }
+  .custom-chart-height {
+    height: 230px;
+  }
+}
+
+/* Small devices (Landscape phones and large portrait phones) */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
   .sidebar {
     width: 100%;
     flex-direction: row;
     align-items: flex-start;
     padding: 1rem;
     flex-wrap: wrap;
-    gap: 0.5rem; /* Updated gap */
+    gap: 0.5rem;
   }
-  .sidebar-header { display: none; }
-  .profile-section { margin-left: auto; }
+  .sidebar-header {
+    display: none;
+  }
+  .profile-section {
+    margin-left: auto;
+  }
   .nav-menu {
     flex: 1 1 100%;
     order: 3;
     flex-direction: row;
     gap: 10px;
+    overflow-x: auto; /* Allow horizontal scroll if needed */
   }
-  .nav-link { padding: 0.5rem 0.75rem; font-size: 0.9em; }
-  .sync-button { 
+  .nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9em;
+  }
+  .sync-button {
     order: 2;
-    margin-top: 0; 
+    margin-top: 0;
   }
-  .main-content { padding: 1.5rem; }
-  .custom-chart-height { height: 200px; }
+  .main-content {
+    padding: 1.5rem;
+  }
+  .custom-chart-height {
+    height: 200px;
+  }
   .topic-wise-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  /* Improve touch targets */
+  .nav-link,
+  .sync-button,
+  .refresh-quote-button {
+    padding: 0.75rem 1rem;
   }
 }
 
-@media(max-width:480px){
-  .stat-info h3 { font-size: 1em; }
-  .stat-info p { font-size: 1.5em; }
-  .chart-container { width: 70px; height: 70px; }
-  .chart-container span { font-size: 0.8em; }
-  .nav-link { padding: 0.375rem 0.625rem; font-size: 0.85em; }
+/* Extra small devices (Portrait phones) */
+@media (max-width: 480px) {
+  .stat-info h3 {
+    font-size: 1em;
+  }
+  .stat-info p {
+    font-size: 1.5em;
+  }
+  .chart-container {
+    width: 70px;
+    height: 70px;
+  }
+  .chart-container span {
+    font-size: 0.8em;
+  }
+  .nav-link {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.85em;
+  }
+  .topic-wise-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Ensure tables are scrollable on very small screens */
+  .topic table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  /* Adjust font sizes for better readability */
+  body {
+    font-size: 14px;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .refresh-quote-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9em;
+  }
 }
 
-/* ==================== Accessibility ==================== */
-.sr-only { 
-  position: absolute; 
-  width: 1px; 
-  height: 1px; 
-  padding: 0; 
-  margin: -1px; 
-  overflow: hidden; 
-  clip: rect(0, 0, 0, 0); 
-  border: 0; 
+/* ==================== Calendar ==================== */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
 }
+
+.month-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.month-solved-badge {
+  background: #ffeb3b;
+  color: #333;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  font-weight: 600;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.day-header {
+  text-align: center;
+  font-weight: 600;
+  padding: 0.25rem 0;
+  color: var(--text-primary);
+}
+
+.calendar-day {
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  min-height: 70px;
+  position: relative;
+  padding: 0.5rem;
+  background: var(--surface);
+  transition: background 0.3s;
+  cursor: pointer; /* So it's clear you can click it */
+}
+
+.calendar-day:hover {
+  background: #f8f9fa;
+}
+
+.calendar-day.inactive {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.solves-count {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==================== Modal ==================== */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Enable scroll if content is long */
+  background-color: rgba(0, 0, 0, 0.6); /* Overlay effect */
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+}
+
+.modal-close {
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: bold;
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: #e53935;
+}
+
+#problems-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#problems-table th,
+#problems-table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+.difficulty-easy {
+  background-color: #d4edda; /* Light green */
+  color: #155724; /* Dark green text */
+  font-weight: bold;
+}
+
+.difficulty-medium {
+  background-color: #fff3cd; /* Light yellow */
+  color: #856404; /* Dark yellow text */
+  font-weight: bold;
+}
+
+.difficulty-hard {
+  background-color: #f8d7da; /* Light red */
+  color: #721c24; /* Dark red text */
+  font-weight: bold;
+}
+
+/* ==================== Firebase Imports ==================== */
+/* (No changes needed here) */
+
+/* ==================== Firebase Configuration (fill yours!) ==================== */
+/* (No changes needed here) */
+
+/* ==================== DOM Elements ==================== */
+/* (No changes needed here) */
+
+/* ==================== State Variables ==================== */
+/* (No changes needed here) */
+
+/* ==================== Profile-based Endpoints ==================== */
+/* (No changes needed here) */
+
+/* ==================== Event Listeners ==================== */
+/* (No changes needed here) */
+
+/* ==================== On DOM Load ==================== */
+/* (No changes needed here) */
+
+/* ==================== Load Problems (from local JSON) ==================== */
+/* (No changes needed here) */
+
+/* ==================== Show/Hide Loading Spinner ==================== */
+/* (No changes needed here) */
+
+/* ==================== Count total problems from `problemsData` ==================== */
+/* (No changes needed here) */
+
+/* ==================== Gather stats from Firestore (completed per topic/difficulty) ==================== */
+/* (No changes needed here) */
+
+/* ==================== Render Topics in Overview (collapsible) ==================== */
+/* (No changes needed here) */
+
+/* ==================== Update progress bar for a given topic ==================== */
+/* (No changes needed here) */
+
+/* ==================== Update Overview ==================== */
+/* (No changes needed here) */
+
+/* ==================== Calculate Average Solved Per Day ==================== */
+/* (No changes needed here) */
+
+/* ==================== Render Average Solved Chart ==================== */
+/* (No changes needed here) */
+
+/* ==================== Update Progress Bar ==================== */
+/* (No changes needed here) */
+
+/* ==================== Streak Calculation ==================== */
+/* (No changes needed here) */
+
+/* ==================== Update Detailed Analysis ==================== */
+/* (No changes needed here) */
+
+/* ==================== Render Solves Over Time Chart ==================== */
+/* (No changes needed here) */
+
+/* ==================== Render Difficulty Distribution Chart ==================== */
+/* (No changes needed here) */
+
+/* ==================== Topic-Wise Detailed Analysis ==================== */
+/* (No changes needed here) */
+
+/* ==================== Sync with External API ==================== */
+/* (No changes needed here) */
+
+/* ==================== Debounce Function ==================== */
+/* (No changes needed here) */
+
+/* ==================== Calendar & Modal ==================== */
+/* (No changes needed here) */

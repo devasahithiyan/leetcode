@@ -5,16 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LeetCode Tracker</title>
 
-  <!-- Google Fonts (Updated) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
 
   <!-- Font Awesome -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script
+    src="https://kit.fontawesome.com/a076d05399.js"
+    crossorigin="anonymous"
+  ></script>
 
-  <!-- Chart.js -->
+  <!-- Chart.js (v4.x recommended) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Styles -->
+  <!-- Main Styles -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -24,14 +30,18 @@
       <div class="sidebar-header">
         <h2>LeetCode Tracker</h2>
       </div>
+
+      <!-- Profile Section -->
       <div class="profile-section">
         <label for="profile">Profile:</label>
         <select id="profile" aria-label="Select Profile">
-          <option value="sharvesh">Sharvesh</option>
+          <option value="Sharvesh">Sharvesh</option>
           <option value="deva">Deva</option>
-          <option value="sandeep">Sandeep</option>
+          <option value="Sandeep">Sandeep</option>
         </select>
       </div>
+
+      <!-- Navigation Menu -->
       <nav class="nav-menu">
         <button class="nav-link active" data-tab="overview">
           <i class="fas fa-home"></i> Overview
@@ -39,7 +49,12 @@
         <button class="nav-link" data-tab="detailed">
           <i class="fas fa-chart-bar"></i> Detailed Analysis
         </button>
+        <button class="nav-link" data-tab="calendar">
+          <i class="fas fa-calendar-alt"></i> Calendar
+        </button>
       </nav>
+
+      <!-- Sync Button -->
       <button id="sync-button" class="sync-button">
         <i class="fas fa-sync-alt"></i> Sync with API
       </button>
@@ -47,7 +62,7 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <!-- ==================== Overview Tab ==================== -->
+      <!-- Overview Tab -->
       <section id="overview" class="tab-content active">
         <div class="stats-grid">
           <!-- Total Solved -->
@@ -60,6 +75,7 @@
               <p id="total-solved">0</p>
             </div>
           </div>
+
           <!-- Average Solved Per Day -->
           <div class="stat-card">
             <div class="stat-icon">
@@ -73,28 +89,68 @@
               </div>
             </div>
           </div>
+
           <!-- Overall Progress Bar -->
           <div class="stat-card progress-card">
             <div class="stat-icon">
               <i class="fas fa-tasks"></i>
             </div>
             <div class="stat-info">
-              <h3>Overall Progress <span id="overall-progress-numbers" class="overall-progress-numbers"></span></h3>
-              <div class="progress-bar-container">
-                <div id="overall-progress-bar" class="progress-bar progress-bar-fill" 
-                     role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+              <h3>
+                Overall Progress
+                <span
+                  id="overall-progress-numbers"
+                  class="overall-progress-numbers"
+                ></span>
+              </h3>
+              <div class="progress-info">
+                <div class="progress-bar-container">
+                  <div
+                    id="overall-progress-bar"
+                    class="progress-bar-fill"
+                    role="progressbar"
+                    aria-valuenow="0"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
                 </div>
+                <span
+                  id="progress-percentage"
+                  class="progress-percentage"
+                  >0%</span
+                >
               </div>
-              <span id="progress-percentage">0%</span>
+            </div>
+          </div>
+
+          <!-- Current Streak -->
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-fire"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Current Streak</h3>
+              <p id="current-streak">0</p>
+            </div>
+          </div>
+
+          <!-- Highest Streak -->
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-trophy"></i>
+            </div>
+            <div class="stat-info">
+              <h3>Highest Streak</h3>
+              <p id="highest-streak">0</p>
             </div>
           </div>
         </div>
 
-        <!-- Problems List (collapsible) -->
+        <!-- Problems List (collapsible by topic) -->
         <section id="problems-list"></section>
       </section>
 
-      <!-- ==================== Detailed Analysis Tab ==================== -->
+      <!-- Detailed Analysis Tab -->
       <section id="detailed" class="tab-content">
         <div class="detailed-stats-grid">
           <!-- Total Solved -->
@@ -135,14 +191,21 @@
           </div>
         </div>
 
-        <!-- ==================== Topic-Wise Detailed Analysis ==================== -->
+        <!-- Topic-Wise Detailed Analysis -->
         <div class="topic-wise-section">
           <h2>Topic-Wise Detailed Analysis</h2>
-          <!-- A grid of cards, each with pie chart, completion rate, etc. -->
-          <div id="topic-wise-grid" class="topic-wise-grid">
-            <!-- Populated dynamically in app.js -->
-          </div>
+          <p class="tw-intro">
+            View a deeper breakdown of your progress, difficulty distribution, 
+            and potential metrics like “Longest Streak” or “Time Spent” for each topic.
+          </p>
+          <div id="topic-wise-grid" class="topic-wise-grid"></div>
         </div>
+      </section>
+
+      <!-- Calendar Tab -->
+      <section id="calendar" class="tab-content">
+        <h2>Calendar Overview</h2>
+        <div id="calendar-container" class="calendar"></div>
       </section>
     </main>
   </div>
@@ -155,7 +218,25 @@
   <!-- Progress Announcer for Accessibility -->
   <div class="sr-only" aria-live="polite" id="progress-announcer"></div>
 
-  <!-- Firebase & Script -->
+  <!-- =========== Modal for Problems on Selected Day =========== -->
+  <div id="day-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-modal" class="modal-close">&times;</span>
+      <h2>Problems on <span id="modal-date"></span></h2>
+      <p id="problems-count" style="margin-bottom:1rem;"></p>
+      <table id="problems-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Difficulty</th>
+          </tr>
+        </thead>
+        <tbody id="problems-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Main Script -->
   <script type="module" src="app.js"></script>
 </body>
 </html>

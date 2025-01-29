@@ -14,17 +14,8 @@ import {
   Timestamp
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// ==================== Firebase Configuration ====================
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "leetocode-2a84c.firebaseapp.com",
-  projectId: "leetocode-2a84c",
-  storageBucket: "leetocode-2a84c.appspot.com",
-  messagingSenderId: "855070686832",
-  appId: "1:855070686832:web:eb875763462d3dfa99feb5",
-  measurementId: "G-T887W9F6JL"
-};
-
+// ==================== Firebase Configuration (fill yours!) ====================
+const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain: "leetocode-2a84c.firebaseapp.com", projectId: "leetocode-2a84c", storageBucket: "leetocode-2a84c.appspot.com", messagingSenderId: "855070686832", appId: "1:855070686832:web:eb875763462d3dfa99feb5", measurementId: "G-T887W9F6JL" };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -40,8 +31,12 @@ const overallProgressNumbers = document.getElementById('overall-progress-numbers
 const detailedTotalSolvedElem = document.getElementById('detailed-total-solved');
 const detailedAverageSolvedElem = document.getElementById('detailed-average-solved');
 
-const solvesOverTimeChartCtx = document.getElementById('solves-over-time-chart').getContext('2d');
-const difficultyDistributionChartCtx = document.getElementById('difficulty-distribution-chart').getContext('2d');
+const solvesOverTimeChartCtx = document
+  .getElementById('solves-over-time-chart')
+  ?.getContext('2d');
+const difficultyDistributionChartCtx = document
+  .getElementById('difficulty-distribution-chart')
+  ?.getContext('2d');
 const topicWiseGrid = document.getElementById('topic-wise-grid');
 
 const tabButtons = document.querySelectorAll('.nav-link');
@@ -50,13 +45,27 @@ const loadingSpinner = document.getElementById('loading-spinner');
 const syncButton = document.getElementById('sync-button');
 const progressAnnouncer = document.getElementById('progress-announcer');
 
-// ==================== State Variables ====================
-let currentProfile = 'sharvesh';
-let problemsData = {};
-let allSolvedDates = [];
-let totalProblemsCount = 0;
+// Streak elements
+const currentStreakElem = document.getElementById('current-streak');
+const highestStreakElem = document.getElementById('highest-streak');
 
-// Chart references
+// Calendar container
+const calendarContainer = document.getElementById('calendar-container');
+
+// Modal references
+const dayModal = document.getElementById('day-modal');
+const closeModalBtn = document.getElementById('close-modal');
+const modalDateElem = document.getElementById('modal-date');
+const problemsCountElem = document.getElementById('problems-count');
+const problemsBody = document.getElementById('problems-body');
+
+// ==================== State Variables ====================
+let currentProfile = 'Sharvesh'; // default
+let problemsData = {};       // from problems.json
+let allSolvedDates = [];     // array of Date objects for all solves
+let totalProblemsCount = 0;  // total in problems.json
+
+// Chart references (destroy before re-create)
 let averageSolvedChartRef = null;
 let solvesOverTimeChartRef = null;
 let difficultyDistributionChartRef = null;
@@ -68,22 +77,25 @@ let topicDifficultyCounts = {};
 // ==================== Profile-based Endpoints ====================
 function getProfileEndpoint(profile) {
   switch (profile) {
-    case 'sandeep':
-      return 'https://alfa-leetcode-api.onrender.com/sandeepkhannavp/acSubmission';
+    case 'Sandeep':
+      return 'https://alfa-leetcode-api.onrender.com/sharveshml/acSubmission';
     case 'deva':
       return 'https://alfa-leetcode-api.onrender.com/devasahithiyan/acSubmission';
-    case 'sharvesh':
+    case 'Sharvesh':
+      return 'https://alfa-leetcode-api.onrender.com/sandeepkhannavp/acSubmission';
+    
     default:
-      return 'https://alfa-leetcode-api.onrender.com/sharveshml/acSubmission';
+      return '';
   }
 }
 
 // ==================== Event Listeners ====================
-profileSelector.addEventListener('change', async () => {
+profileSelector?.addEventListener('change', async () => {
   currentProfile = profileSelector.value;
   await loadProblems();
   await updateOverview();
   await updateDetailedAnalysis();
+  renderCalendar();
 });
 
 tabButtons.forEach(button => {
@@ -97,14 +109,31 @@ tabButtons.forEach(button => {
   });
 });
 
-// ==================== Initial Load ====================
+syncButton?.addEventListener('click', () => {
+  if (confirm('Synchronize your local problems with external API?')) {
+    syncSubmittedProblems();
+  }
+});
+
+// Modal close
+closeModalBtn?.addEventListener('click', () => {
+  dayModal.style.display = 'none';
+});
+window.addEventListener('click', (e) => {
+  if (e.target === dayModal) {
+    dayModal.style.display = 'none';
+  }
+});
+
+// ==================== On DOM Load ====================
 document.addEventListener('DOMContentLoaded', async () => {
   await loadProblems();
   await updateOverview();
   await updateDetailedAnalysis();
+  renderCalendar();
 });
 
-// ==================== Load Problems ====================
+// ==================== Load Problems (from local JSON) ====================
 async function loadProblems() {
   try {
     showLoading(true);
@@ -117,23 +146,26 @@ async function loadProblems() {
     renderOverviewTopics();
   } catch (e) {
     console.error('Problem loading:', e);
-    problemsList.innerHTML = `
-      <div class="error-message">
-        <i class="fas fa-exclamation-triangle"></i>
-        Failed to load problems. Please try again later.
-      </div>
-    `;
+    if (problemsList) {
+      problemsList.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          Failed to load problems. Please try again later.
+        </div>
+      `;
+    }
   } finally {
     showLoading(false);
   }
 }
 
-// ==================== Utility Function to Show/Hide Loading Spinner ====================
+// ==================== Show/Hide Loading Spinner ====================
 function showLoading(show) {
+  if (!loadingSpinner) return;
   loadingSpinner.style.display = show ? 'flex' : 'none';
 }
 
-// ==================== Count total problems ====================
+// ==================== Count total problems from `problemsData` ====================
 function countTotalProblems() {
   let count = 0;
   if (problemsData.topics && Array.isArray(problemsData.topics)) {
@@ -144,7 +176,7 @@ function countTotalProblems() {
   totalProblemsCount = count;
 }
 
-// ==================== Gather stats from Firestore: completed per topic & difficulty ====================
+// ==================== Gather stats from Firestore (completed per topic/difficulty) ====================
 async function computeTopicStats() {
   topicSolvedCounts = {};
   topicDifficultyCounts = {};
@@ -173,13 +205,16 @@ async function computeTopicStats() {
   });
 }
 
-// ==================== Render Collapsible Topics in Overview ====================
+// ==================== Render Topics in Overview (collapsible) ====================
 function renderOverviewTopics() {
   if (!problemsData.topics || !Array.isArray(problemsData.topics)) {
-    problemsList.innerHTML = '<p>No valid topics found.</p>';
+    if (problemsList) {
+      problemsList.innerHTML = '<p>No valid topics found.</p>';
+    }
     return;
   }
 
+  if (!problemsList) return;
   problemsList.innerHTML = ''; // Clear existing content
 
   problemsData.topics.forEach(topic => {
@@ -195,29 +230,27 @@ function renderOverviewTopics() {
     const headerDiv = document.createElement('div');
     headerDiv.classList.add('topic-header');
 
+    // Topic name
     const h2 = document.createElement('h2');
     h2.textContent = topic.name;
 
-    // Progress bar container
+    // Progress bar
+    const progressWrapper = document.createElement('div');
+    progressWrapper.classList.add('progress-wrapper');
     const subContainer = document.createElement('div');
     subContainer.classList.add('progress-bar-container');
-
     const subBar = document.createElement('div');
-    subBar.classList.add('progress-bar', 'progress-bar-fill');
+    subBar.classList.add('progress-bar-fill');
     subBar.style.width = `${pct}%`;
-
     subContainer.appendChild(subBar);
 
     const labelSpan = document.createElement('span');
     labelSpan.style.fontSize = '0.9em';
-    labelSpan.textContent = `(${pct}% | ${solved}/${total})`;
-    labelSpan.style.marginLeft = '5px';
+    labelSpan.textContent = `${pct}% | ${solved}/${total}`;
+    progressWrapper.appendChild(subContainer);
+    progressWrapper.appendChild(labelSpan);
 
-    headerDiv.appendChild(h2);
-    headerDiv.appendChild(subContainer);
-    headerDiv.appendChild(labelSpan);
-
-    // ==================== Add Sort Controls ====================
+    // Sort controls
     const sortControls = document.createElement('div');
     sortControls.classList.add('sort-controls');
     sortControls.innerHTML = `
@@ -227,15 +260,17 @@ function renderOverviewTopics() {
         <option value="difficulty-desc">Difficulty (Hard First)</option>
       </select>
     `;
+
+    headerDiv.appendChild(h2);
+    headerDiv.appendChild(progressWrapper);
     headerDiv.appendChild(sortControls);
 
-    // Table wrapper
     const tableWrapper = document.createElement('div');
     tableWrapper.style.display = 'none';
 
     headerDiv.addEventListener('click', (e) => {
-      // Prevent toggle when interacting with sort controls
-      if (e.target.closest('.sort-controls')) return;
+      // Prevent toggling if clicking directly on the SELECT
+      if (e.target.closest('.sort-controls') || e.target.tagName === 'SELECT') return;
       tableWrapper.style.display = (tableWrapper.style.display === 'none') ? 'block' : 'none';
     });
 
@@ -277,9 +312,10 @@ function renderOverviewTopics() {
         // Difficulty
         const dTd = document.createElement('td');
         dTd.textContent = prob.difficulty;
-        if (prob.difficulty.toLowerCase() === 'easy') dTd.classList.add('difficulty-easy');
-        if (prob.difficulty.toLowerCase() === 'medium') dTd.classList.add('difficulty-medium');
-        if (prob.difficulty.toLowerCase() === 'hard') dTd.classList.add('difficulty-hard');
+        const lower = prob.difficulty.toLowerCase();
+        if (lower === 'easy') dTd.classList.add('difficulty-easy');
+        if (lower === 'medium') dTd.classList.add('difficulty-medium');
+        if (lower === 'hard') dTd.classList.add('difficulty-hard');
         row.appendChild(dTd);
 
         // Solved On
@@ -311,7 +347,7 @@ function renderOverviewTopics() {
           }
         }).catch(e => console.error(`Error reading docRef for ${prob.title}:`, e));
 
-        // Checkbox Event Listener
+        // Checkbox changes
         checkbox.addEventListener('change', async () => {
           try {
             if (checkbox.checked) {
@@ -332,18 +368,19 @@ function renderOverviewTopics() {
               });
               sSpan.textContent = 'N/A';
             }
-            // Force immediate UI update
+            // Recompute
             await computeTopicStats();
             updateTopicProgress(topic.name);
             renderTopicWiseDetailedAnalysis();
-            await updateOverview(); // Added line
+            await updateOverview();
             await updateDetailedAnalysis();
+            renderCalendar();
           } catch (err) {
             console.error('Error:', err);
           }
         });
 
-        // Notes Event Listener with Debounce
+        // Notes (debounce)
         nInput.addEventListener('input', debounce(async () => {
           const val = nInput.value.trim();
           try {
@@ -367,7 +404,7 @@ function renderOverviewTopics() {
 
     problemsList.appendChild(topicDiv);
 
-    // ==================== Add Event Listener for Sorting ====================
+    // Sorting
     sortControls.querySelector('select').addEventListener('change', (e) => {
       const sortOrder = e.target.value;
       const tableBody = tableWrapper.querySelector('tbody');
@@ -393,105 +430,7 @@ function renderOverviewTopics() {
   });
 }
 
-// ==================== Update Overview ====================
-async function updateOverview() {
-  try {
-    const userRef = collection(db, 'users', currentProfile, 'problems');
-    const q = query(userRef, where('completed', '==', true));
-    const snap = await getDocs(q);
-    const totalSolved = snap.size;
-    totalSolvedElem.textContent = totalSolved;
-
-    allSolvedDates = [];
-    snap.forEach(ds => {
-      const data = ds.data();
-      if (data.solvedAt && data.solvedAt.toDate) {
-        allSolvedDates.push(data.solvedAt.toDate());
-      }
-    });
-
-    // Calculate and display average
-    calculateAverageSolvedPerDay(totalSolved);
-    renderAverageSolvedChart(totalSolved);
-
-    // Update overall progress
-    const pct = Math.min((totalSolved / totalProblemsCount) * 100, 100); // Updated line
-    updateProgressBar(overallProgressBar, pct);
-    overallProgressNumbers.textContent = `(${totalSolved}/${totalProblemsCount})`;
-    progressPercentage.textContent = `${pct.toFixed(1)}%`;
-    overallProgressBar.setAttribute('aria-valuenow', pct.toFixed(1));
-  } catch (e) {
-    console.error('Error in updateOverview:', e);
-  }
-}
-
-// ==================== Calculate Average Solved Per Day ====================
-function calculateAverageSolvedPerDay(totalSolved) {
-  if (!allSolvedDates.length) {
-    averageSolvedElem.textContent = '0';
-    return;
-  }
-  const sorted = [...allSolvedDates].sort((a, b) => a - b);
-  const firstDate = sorted[0];
-  const days = Math.ceil((Date.now() - firstDate) / (1000 * 3600 * 24)) || 1;
-  const avg = (totalSolved / days).toFixed(2);
-  averageSolvedElem.textContent = avg;
-}
-
-// ==================== Render Doughnut for Average Solved ====================
-function renderAverageSolvedChart(totalSolved) {
-  const sorted = [...allSolvedDates].sort((a, b) => a - b);
-  const firstDate = sorted[0] || new Date();
-  const days = Math.ceil((Date.now() - firstDate) / (1000 * 3600 * 24)) || 1;
-  const avg = (totalSolved / days).toFixed(2);
-  const target = 10;
-  const pct = Math.min((avg / target) * 100, 100);
-
-  if (averageSolvedChartRef) averageSolvedChartRef.destroy();
-
-  averageSolvedChartRef = new Chart(document.getElementById('average-solved-chart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Solved', 'Remaining'],
-      datasets: [{
-        data: [pct, 100 - pct],
-        backgroundColor: ['#1abc9c', '#ecf0f1'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true, /* Added line */
-      maintainAspectRatio: false, /* Added line */
-      cutout: '70%',
-      plugins: {
-        tooltip: { enabled: false },
-        legend: { display: false },
-        beforeDraw: function (chart) {
-          const { ctx, width, height } = chart;
-          ctx.restore();
-          const fs = (height / 160).toFixed(2);
-          ctx.font = `${fs}em Inter`; /* Updated font */
-          ctx.textBaseline = 'middle';
-          const text = avg;
-          const textX = Math.round((width - ctx.measureText(text).width) / 2);
-          const textY = height / 2;
-          ctx.fillStyle = '#34495e';
-          ctx.fillText(text, textX, textY);
-          ctx.save();
-        }
-      }
-    }
-  });
-}
-
-// ==================== Update Progress Bar Utility ====================
-function updateProgressBar(barElement, percentage) {
-  progressAnnouncer.textContent = `Overall progress updated to ${percentage.toFixed(1)}%`; /* Added line */
-  barElement.style.width = `${percentage.toFixed(1)}%`;
-  barElement.style.transition = 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'; /* Updated transition */
-}
-
-/* ==================== Update Topic Progress ==================== */
+// Update progress bar for a given topic
 function updateTopicProgress(topicName) {
   const topics = document.querySelectorAll('.topic');
   topics.forEach(topicDiv => {
@@ -506,9 +445,133 @@ function updateTopicProgress(topicName) {
       const progressText = topicDiv.querySelector('.progress-bar-container + span');
 
       progressBar.style.width = `${pct}%`;
-      progressText.textContent = `(${pct.toFixed(1)}% | ${solved}/${total})`;
+      progressText.textContent = (`${pct.toFixed(1)}% | ${solved}/${total}`);
     }
   });
+}
+
+// ==================== Update Overview ====================
+async function updateOverview() {
+  try {
+    const userRef = collection(db, 'users', currentProfile, 'problems');
+    const q = query(userRef, where('completed', '==', true));
+    const snap = await getDocs(q);
+    const totalSolved = snap.size;
+    if (totalSolvedElem) totalSolvedElem.textContent = totalSolved;
+
+    // Collect all solved dates
+    allSolvedDates = [];
+    snap.forEach(ds => {
+      const data = ds.data();
+      if (data.solvedAt && data.solvedAt.toDate) {
+        allSolvedDates.push(data.solvedAt.toDate());
+      }
+    });
+
+    // Average
+    calculateAverageSolvedPerDay(totalSolved);
+    renderAverageSolvedChart(totalSolved);
+
+    // Overall progress
+    const pct = Math.min((totalSolved / totalProblemsCount) * 100, 100);
+    updateProgressBar(overallProgressBar, pct);
+    if (overallProgressNumbers) {
+      overallProgressNumbers.textContent = (`${totalSolved}/${totalProblemsCount}`);
+    }
+    if (progressPercentage) {
+      progressPercentage.textContent = `${pct.toFixed(1)}%`;
+      overallProgressBar?.setAttribute('aria-valuenow', pct.toFixed(1));
+    }
+
+    // Streaks
+    const { currentStreak, highestStreak } = calculateStreaks(allSolvedDates);
+    if (currentStreakElem) currentStreakElem.textContent = currentStreak;
+    if (highestStreakElem) highestStreakElem.textContent = highestStreak;
+  } catch (e) {
+    console.error('Error in updateOverview:', e);
+  }
+}
+
+function calculateAverageSolvedPerDay(totalSolved) {
+  if (!allSolvedDates.length) {
+    averageSolvedElem.textContent = '0';
+    return;
+  }
+  const sorted = [...allSolvedDates].sort((a, b) => a - b);
+  const firstDate = sorted[0];
+  const days = Math.ceil((Date.now() - firstDate) / (1000 * 3600 * 24)) || 1;
+  const avg = (totalSolved / days).toFixed(2);
+  averageSolvedElem.textContent = avg;
+}
+
+function renderAverageSolvedChart(totalSolved) {
+  const sorted = [...allSolvedDates].sort((a, b) => a - b);
+  const firstDate = sorted[0] || new Date();
+  const days = Math.ceil((Date.now() - firstDate) / (1000 * 3600 * 24)) || 1;
+  const avg = (totalSolved / days).toFixed(2);
+  const target = 10;
+  const pct = Math.min((avg / target) * 100, 100);
+
+  // destroy old instance if any
+  if (averageSolvedChartRef) {
+    averageSolvedChartRef.destroy();
+    averageSolvedChartRef = null;
+  }
+
+  const ctx = document.getElementById('average-solved-chart');
+  if (!ctx) return;
+
+  averageSolvedChartRef = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Solved', 'Remaining'],
+      datasets: [
+        {
+          data: [pct, 100 - pct],
+          backgroundColor: ['#1abc9c', '#ecf0f1'],
+          borderWidth: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        tooltip: { enabled: false },
+        legend: { display: false }
+      }
+    }
+  });
+}
+
+function updateProgressBar(barElement, percentage) {
+  if (!barElement) return;
+  progressAnnouncer.textContent = `Overall progress updated to ${percentage.toFixed(1)}%`;
+  barElement.style.width = `${percentage.toFixed(1)}%`;
+  barElement.style.transition = 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+}
+
+// ==================== Streak Calculation ====================
+function calculateStreaks(dates) {
+  if (!dates.length) return { currentStreak: 0, highestStreak: 0 };
+  const sorted = [...dates].map(d => new Date(d.getFullYear(), d.getMonth(), d.getDate())).sort((a, b) => a - b);
+
+  let currentStreak = 1;
+  let highestStreak = 1;
+
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = sorted[i - 1];
+    const curr = sorted[i];
+    const diffDays = Math.round((curr - prev) / (1000 * 3600 * 24));
+    if (diffDays === 1) {
+      currentStreak++;
+      if (currentStreak > highestStreak) highestStreak = currentStreak;
+    } else if (diffDays > 1) {
+      currentStreak = 1;
+    }
+  }
+  return { currentStreak, highestStreak };
 }
 
 // ==================== Update Detailed Analysis ====================
@@ -518,8 +581,9 @@ async function updateDetailedAnalysis() {
     const q = query(userRef, where('completed', '==', true));
     const snap = await getDocs(q);
     const totalSolved = snap.size;
-    detailedTotalSolvedElem.textContent = totalSolved;
+    if (detailedTotalSolvedElem) detailedTotalSolvedElem.textContent = totalSolved;
 
+    // Rebuild allSolvedDates
     allSolvedDates = [];
     snap.forEach(ds => {
       const data = ds.data();
@@ -528,28 +592,29 @@ async function updateDetailedAnalysis() {
       }
     });
 
-    // Calculate and display average
+    // Reuse average from overview
     calculateAverageSolvedPerDay(totalSolved);
-    detailedAverageSolvedElem.textContent = averageSolvedElem.textContent;
+    if (detailedAverageSolvedElem) {
+      detailedAverageSolvedElem.textContent = averageSolvedElem?.textContent || '0';
+    }
 
+    // Charts
     renderSolvesOverTimeChart();
     renderDifficultyDistributionChart();
 
-    // Re-gather stats for the advanced topic analysis
     await computeTopicStats();
     renderTopicWiseDetailedAnalysis();
-
   } catch (e) {
     console.error('Error updateDetailedAnalysis:', e);
   }
 }
 
-// ==================== Render Solves Over Time (line) ====================
 function renderSolvesOverTimeChart() {
   if (solvesOverTimeChartRef) {
     solvesOverTimeChartRef.destroy();
     solvesOverTimeChartRef = null;
   }
+  if (!solvesOverTimeChartCtx) return;
 
   const solveCounts = {};
   allSolvedDates.forEach(date => {
@@ -563,19 +628,21 @@ function renderSolvesOverTimeChart() {
     type: 'line',
     data: {
       labels: sortedDays,
-      datasets: [{
-        label: 'Problems Solved',
-        data: data,
-        borderColor: '#1abc9c',
-        backgroundColor: 'rgba(26,188,156,0.2)',
-        fill: true,
-        tension: 0.3,
-        pointBackgroundColor: '#1abc9c'
-      }]
+      datasets: [
+        {
+          label: 'Problems Solved',
+          data: data,
+          borderColor: '#1abc9c',
+          backgroundColor: 'rgba(26,188,156,0.2)',
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: '#1abc9c'
+        }
+      ]
     },
     options: {
-      responsive: true, /* Added line */
-      maintainAspectRatio: false, /* Added line */
+      responsive: true,
+      maintainAspectRatio: false,
       scales: {
         x: {
           title: { display: true, text: 'Date' },
@@ -590,13 +657,8 @@ function renderSolvesOverTimeChart() {
         }
       },
       plugins: {
-        legend: { 
-          display: false,
-          position: 'bottom',
-          labels: {
-            boxWidth: 12,
-            padding: 20
-          }
+        legend: {
+          display: false
         },
         tooltip: {
           backgroundColor: '#1abc9c',
@@ -608,15 +670,19 @@ function renderSolvesOverTimeChart() {
   });
 }
 
-// ==================== Render Difficulty Distribution (pie) ====================
 async function renderDifficultyDistributionChart() {
+  if (difficultyDistributionChartRef) {
+    difficultyDistributionChartRef.destroy();
+    difficultyDistributionChartRef = null;
+  }
+  if (!difficultyDistributionChartCtx) return;
+
   try {
     const userRef = collection(db, 'users', currentProfile, 'problems');
     const q = query(userRef, where('completed', '==', true));
     const snap = await getDocs(q);
 
     const difficultyCounts = { Easy: 0, Medium: 0, Hard: 0 };
-
     snap.forEach(ds => {
       const data = ds.data();
       if (data.difficulty && difficultyCounts[data.difficulty] !== undefined) {
@@ -627,27 +693,23 @@ async function renderDifficultyDistributionChart() {
     const labels = Object.keys(difficultyCounts);
     const chartData = Object.values(difficultyCounts);
 
-    if (difficultyDistributionChartRef) difficultyDistributionChartRef.destroy();
-
     difficultyDistributionChartRef = new Chart(difficultyDistributionChartCtx, {
       type: 'pie',
       data: {
         labels: labels,
-        datasets: [{
-          data: chartData,
-          backgroundColor: ['#2ecc71', '#f1c40f', '#e74c3c']
-        }]
+        datasets: [
+          {
+            data: chartData,
+            backgroundColor: ['#2ecc71', '#f1c40f', '#e74c3c']
+          }
+        ]
       },
       options: {
-        responsive: true, /* Added line */
-        maintainAspectRatio: false, /* Added line */
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
-          legend: { 
-            position: 'bottom',
-            labels: {
-              boxWidth: 12,
-              padding: 20
-            }
+          legend: {
+            position: 'bottom'
           },
           tooltip: {
             backgroundColor: '#34495e',
@@ -662,120 +724,102 @@ async function renderDifficultyDistributionChart() {
   }
 }
 
-// ==================== Render Topic-Wise Detailed Analysis (grid of cards) ====================
+// ==================== Topic-Wise Detailed Analysis ====================
 function renderTopicWiseDetailedAnalysis() {
-  if (!problemsData.topics) return;
-
-  topicWiseGrid.innerHTML = ''; // Clear existing content
+  if (!problemsData.topics || !topicWiseGrid) return;
+  topicWiseGrid.innerHTML = ''; // Clear existing
 
   problemsData.topics.forEach(topic => {
-    // Total problems
     const total = Array.isArray(topic.problems) ? topic.problems.length : 0;
     const solved = topicSolvedCounts[topic.name] || 0;
     const mainPct = (total === 0) ? 0 : ((solved / total) * 100).toFixed(1);
 
-    // Difficulty counts
-    const diffObj = topicDifficultyCounts[topic.name] || { Easy: 0, Medium: 0, Hard: 0 };
+    const diffObj = topicDifficultyCounts[topic.name] || {
+      Easy: 0,
+      Medium: 0,
+      Hard: 0
+    };
     const eCount = diffObj.Easy;
     const mCount = diffObj.Medium;
     const hCount = diffObj.Hard;
 
-    // Total easy/med/hard for that topic
-    let totalEasy = 0, totalMed = 0, totalHard = 0;
-    if (Array.isArray(topic.problems)) {
-      topic.problems.forEach(prob => {
-        if (prob.difficulty.toLowerCase() === 'easy') totalEasy++;
-        else if (prob.difficulty.toLowerCase() === 'medium') totalMed++;
-        else if (prob.difficulty.toLowerCase() === 'hard') totalHard++;
-      });
-    }
-
-    // Build a card
+    // Card
     const card = document.createElement('div');
-    card.classList.add('topic-wise-card');
+    card.classList.add('accordion-card');
 
-    // Title
+    // Header
+    const accordionHeader = document.createElement('div');
+    accordionHeader.classList.add('accordion-header');
+
     const heading = document.createElement('h3');
     heading.textContent = topic.name;
-    card.appendChild(heading);
+    accordionHeader.appendChild(heading);
 
-    // Stats Row
-    const statsRow = document.createElement('div');
-    statsRow.classList.add('stats-row');
+    const progressInfo = document.createElement('div');
+    progressInfo.classList.add('topic-progress-info');
+    progressInfo.innerHTML = `<span>${mainPct}% Completed</span>`;
+    accordionHeader.appendChild(progressInfo);
 
-    const stat1 = document.createElement('div');
-    stat1.classList.add('stat-item');
-    stat1.innerHTML = `<strong>Completed:</strong> ${solved} / ${total} (${mainPct}%)`;
-    statsRow.appendChild(stat1);
+    // Body
+    const accordionBody = document.createElement('div');
+    accordionBody.classList.add('accordion-body');
 
-    const stat2 = document.createElement('div');
-    stat2.classList.add('stat-item');
-    stat2.innerHTML = `<strong>Easy:</strong> ${eCount} / ${totalEasy}`;
-    statsRow.appendChild(stat2);
+    const extraStats = document.createElement('div');
+    extraStats.classList.add('topic-extra-stats');
+    const longestStreak = document.createElement('div');
+    longestStreak.classList.add('stat-box');
+    longestStreak.innerHTML = `<strong>Longest Streak:</strong> 0 Days`; 
+    const timeSpent = document.createElement('div');
+    timeSpent.classList.add('stat-box');
+    timeSpent.innerHTML = `<strong>Time Spent:</strong> 0 Hours`; 
+    extraStats.appendChild(longestStreak);
+    extraStats.appendChild(timeSpent);
 
-    const stat3 = document.createElement('div');
-    stat3.classList.add('stat-item');
-    stat3.innerHTML = `<strong>Medium:</strong> ${mCount} / ${totalMed}`;
-    statsRow.appendChild(stat3);
+    accordionBody.appendChild(extraStats);
 
-    const stat4 = document.createElement('div');
-    stat4.classList.add('stat-item');
-    stat4.innerHTML = `<strong>Hard:</strong> ${hCount} / ${totalHard}`;
-    statsRow.appendChild(stat4);
-
-    card.appendChild(statsRow);
-
-    // Progress Text
-    const progressLine = document.createElement('p');
-    progressLine.classList.add('progress-text');
-    progressLine.textContent = `Progress: ${mainPct}%`;
-    card.appendChild(progressLine);
-
-    // Chart Container
+    // Pie chart for that topic
     const chartDiv = document.createElement('div');
     chartDiv.classList.add('topic-chart');
     const canvas = document.createElement('canvas');
     canvas.id = `topic-chart-${topic.name.replace(/\s+/g, '-')}`;
     chartDiv.appendChild(canvas);
-    card.appendChild(chartDiv);
+    accordionBody.appendChild(chartDiv);
 
+    card.appendChild(accordionHeader);
+    card.appendChild(accordionBody);
     topicWiseGrid.appendChild(card);
 
-    // Render a small pie chart for eCount, mCount, hCount
+    // Render small pie
     new Chart(canvas.getContext('2d'), {
       type: 'pie',
       data: {
         labels: ['Easy', 'Medium', 'Hard'],
-        datasets: [{
-          data: [eCount, mCount, hCount],
-          backgroundColor: ['#2ecc71', '#f1c40f', '#e74c3c']
-        }]
+        datasets: [
+          {
+            data: [eCount, mCount, hCount],
+            backgroundColor: ['#2ecc71', '#f1c40f', '#e74c3c']
+          }
+        ]
       },
       options: {
-        responsive: true, /* Added line */
-        maintainAspectRatio: false, /* Added line */
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
-          legend: { 
-            position: 'bottom',
-            labels: {
-              boxWidth: 12,
-              padding: 20
-            }
-          },
-          tooltip: {
-            backgroundColor: '#34495e',
-            titleColor: '#fff',
-            bodyColor: '#fff'
-          }
+          legend: { position: 'bottom' }
         }
       }
+    });
+
+    // Toggle
+    accordionHeader.addEventListener('click', () => {
+      accordionBody.classList.toggle('open');
     });
   });
 }
 
-// ==================== Sync with external API ====================
+// ==================== Sync with External API ====================
 async function syncSubmittedProblems() {
-  if (loadingSpinner.style.display === 'flex') {
+  if (loadingSpinner?.style.display === 'flex') {
     alert('Synchronization is already in progress. Please wait.');
     return;
   }
@@ -783,12 +827,16 @@ async function syncSubmittedProblems() {
 
   try {
     const url = getProfileEndpoint(currentProfile);
+    if (!url) {
+      alert('No API endpoint found for this profile!');
+      return;
+    }
     const resp = await fetch(url);
     if (!resp.ok) throw new Error(`API request failed, status ${resp.status}`);
 
     const data = await resp.json();
     if (!data || !Array.isArray(data.submission)) {
-      alert('API data unexpected or no submission array found.');
+      alert('API data unexpected or no "submission" array found.');
       return;
     }
 
@@ -800,16 +848,17 @@ async function syncSubmittedProblems() {
 
     const matched = matchProblems(submittedTitles, problemsData);
     if (!matched.length) {
-      alert('No matching problems found between your data and the external API.');
+      alert('No matching problems found between local data and external API.');
       return;
     }
 
     await updateFirebaseForMatchedProblems(matched);
 
-    // Reload everything
+    // Reload
     await loadProblems();
     await updateOverview();
     await updateDetailedAnalysis();
+    renderCalendar();
 
     alert('Synchronization complete! Marked new problems as completed.');
   } catch (e) {
@@ -821,12 +870,11 @@ async function syncSubmittedProblems() {
 }
 
 function matchProblems(submittedTitles, localData) {
-  // Improved normalization
-  const normalized = submittedTitles.map(t => 
+  const normalized = submittedTitles.map(t =>
     t.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
   );
-  
-  return localData.topics.flatMap(topic => 
+
+  return localData.topics.flatMap(topic =>
     topic.problems.filter(prob => {
       const cleanTitle = prob.title.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
       return normalized.includes(cleanTitle);
@@ -871,15 +919,6 @@ async function updateFirebaseForMatchedProblems(matchedProblems) {
   await Promise.all(tasks);
 }
 
-// ==================== Sync Button ====================
-if (syncButton) {
-  syncButton.addEventListener('click', () => {
-    if (confirm('Synchronize your local problems with external API?')) {
-      syncSubmittedProblems();
-    }
-  });
-}
-
 // ==================== Debounce Function ====================
 function debounce(func, timeout = 500) {
   let timer;
@@ -887,4 +926,221 @@ function debounce(func, timeout = 500) {
     clearTimeout(timer);
     timer = setTimeout(() => func.apply(this, args), timeout);
   };
+}
+
+// ==================== Calendar & Modal ==================== */
+/**
+ * getAllCompletedProblems -> array of { date:Date, title:string, difficulty:string }
+ */
+async function getAllCompletedProblems() {
+  const result = [];
+  try {
+    const userRef = collection(db, 'users', currentProfile, 'problems');
+    const q = query(userRef, where('completed', '==', true));
+    const snap = await getDocs(q);
+
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      if (data.solvedAt && data.solvedAt.toDate) {
+        result.push({
+          date: data.solvedAt.toDate(),
+          title: data.title || 'Untitled',
+          difficulty: data.difficulty || 'Unknown'
+        });
+      }
+    });
+  } catch (err) {
+    console.error('Error in getAllCompletedProblems:', err);
+  }
+  return result;
+}
+
+/** openDayModal(isoStr, dayData) => dayData = { count, problems: [{title, difficulty}, ...] } */
+function openDayModal(isoStr, dayData) {
+  if (!dayModal) return;
+  dayModal.style.display = 'block';
+  modalDateElem.textContent = isoStr;
+  problemsCountElem.textContent = `Total Problems Solved: ${dayData.count}`;
+
+  problemsBody.innerHTML = '';
+  dayData.problems.forEach((prob) => {
+    const tr = document.createElement('tr');
+    
+    // Problem Title
+    const tdTitle = document.createElement('td');
+    tdTitle.textContent = prob.title;
+    
+    // Difficulty
+    const tdDiff = document.createElement('td');
+    tdDiff.textContent = prob.difficulty;
+    
+    // Add difficulty-based class
+    const diffLower = prob.difficulty.toLowerCase();
+    if (diffLower === 'easy') tdDiff.classList.add('difficulty-easy');
+    if (diffLower === 'medium') tdDiff.classList.add('difficulty-medium');
+    if (diffLower === 'hard') tdDiff.classList.add('difficulty-hard');
+    
+    tr.appendChild(tdTitle);
+    tr.appendChild(tdDiff);
+    problemsBody.appendChild(tr);
+  });
+}
+
+/**
+ * getMonthlySolvedCount(solveMap, year, month) => total solves in the specified month
+ */
+function getMonthlySolvedCount(solveMap, year, month) {
+  let total = 0;
+  const days = Object.keys(solveMap);
+  days.forEach(dayStr => {
+    const dObj = new Date(dayStr);
+    if (dObj.getFullYear() === year && dObj.getMonth() === month) {
+      total += solveMap[dayStr].count;
+    }
+  });
+  return total;
+}
+
+/** Main calendar function */
+function renderCalendar(year, month) {
+  if (!calendarContainer) return;
+
+  // default to current year/month if none
+  const now = new Date();
+  const currYear = year ?? now.getFullYear();
+  const currMonth = (month ?? now.getMonth());
+
+  // Clear
+  calendarContainer.innerHTML = '';
+
+  // header
+  const headerDiv = document.createElement('div');
+  headerDiv.classList.add('calendar-header');
+
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = 'Prev';
+  prevBtn.addEventListener('click', () => {
+    let newMonth = currMonth - 1;
+    let newYear = currYear;
+    if (newMonth < 0) {
+      newMonth = 11;
+      newYear--;
+    }
+    renderCalendar(newYear, newMonth);
+  });
+
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next';
+  nextBtn.addEventListener('click', () => {
+    let newMonth = currMonth + 1;
+    let newYear = currYear;
+    if (newMonth > 11) {
+      newMonth = 0;
+      newYear++;
+    }
+    renderCalendar(newYear, newMonth);
+  });
+
+  // month info
+  const monthInfo = document.createElement('div');
+  monthInfo.classList.add('month-info');
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const monthYearTitle = document.createElement('h3');
+  monthYearTitle.style.margin = '0';
+  monthYearTitle.textContent = `${monthNames[currMonth]} ${currYear}`;
+
+  // badge for month total
+  const monthBadge = document.createElement('span');
+  monthBadge.classList.add('month-solved-badge');
+  monthBadge.textContent = `Month Solved: 0`; // fill later
+
+  monthInfo.appendChild(monthYearTitle);
+  monthInfo.appendChild(monthBadge);
+
+  headerDiv.appendChild(prevBtn);
+  headerDiv.appendChild(monthInfo);
+  headerDiv.appendChild(nextBtn);
+
+  calendarContainer.appendChild(headerDiv);
+
+  // fill days
+  getAllCompletedProblems()
+    .then(allCompleted => {
+      // build solveMap
+      const solveMap = {};
+      allCompleted.forEach(item => {
+        const dayStr = item.date.toISOString().split('T')[0];
+        if (!solveMap[dayStr]) {
+          solveMap[dayStr] = { count: 0, problems: [] };
+        }
+        solveMap[dayStr].count++;
+        solveMap[dayStr].problems.push({
+          title: item.title,
+          difficulty: item.difficulty
+        });
+      });
+
+      // fill month-solved
+      const monthSolved = getMonthlySolvedCount(solveMap, currYear, currMonth);
+      monthBadge.textContent = `Solved this Month: ${monthSolved}`;
+
+      // day names
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const grid = document.createElement('div');
+      grid.classList.add('calendar-grid');
+
+      dayNames.forEach(d => {
+        const dh = document.createElement('div');
+        dh.classList.add('day-header');
+        dh.textContent = d;
+        grid.appendChild(dh);
+      });
+
+      // compute days
+      const firstDayOfMonth = new Date(currYear, currMonth, 1);
+      const lastDayOfMonth = new Date(currYear, currMonth + 1, 0);
+      const startDay = firstDayOfMonth.getDay();
+      const totalDays = lastDayOfMonth.getDate();
+
+      // blank
+      for (let i = 0; i < startDay; i++) {
+        const blank = document.createElement('div');
+        blank.classList.add('calendar-day', 'inactive');
+        grid.appendChild(blank);
+      }
+
+      // fill
+      for (let day = 1; day <= totalDays; day++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.classList.add('calendar-day');
+        dayDiv.textContent = day;
+
+        const dateObj = new Date(currYear, currMonth, day);
+        const isoStr = dateObj.toISOString().split('T')[0];
+
+        if (solveMap[isoStr]) {
+          const sc = document.createElement('div');
+          sc.classList.add('solves-count');
+          sc.textContent = solveMap[isoStr].count;
+          dayDiv.appendChild(sc);
+
+          // click -> open modal
+          dayDiv.addEventListener('click', () => {
+            openDayModal(isoStr, solveMap[isoStr]);
+          });
+        } else {
+          dayDiv.addEventListener('click', () => {
+            openDayModal(isoStr, { count: 0, problems: [] });
+          });
+        }
+        grid.appendChild(dayDiv);
+      }
+
+      calendarContainer.appendChild(grid);
+    })
+    .catch(err => console.error('Error building solve map:', err));
 }
